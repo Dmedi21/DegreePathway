@@ -2,6 +2,8 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import datetime
+from dateutil.relativedelta import relativedelta
 
 # Load CSV data
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -43,6 +45,23 @@ st.divider()
 # Button to open Degree Audit
 if st.button("Degree Audit"):
     st.switch_page("pages/DegreeAudit.py")
+
+# Estimate Graduation Date
+st.subheader("Estimated Graduation Date")
+
+CREDITS_PER_SEMESTER = 12
+MONTHS_PER_SEMESTER = 4  # Approx duration of a semester
+
+# Calculate number of semesters remaining (rounded up)
+remaining_credits = df[df['Completed'] == 'remaining units']['Credits'].sum()
+semesters_remaining = -(-remaining_credits // CREDITS_PER_SEMESTER)
+
+# Estimate graduation date
+months_until_graduation = semesters_remaining * MONTHS_PER_SEMESTER
+estimated_graduation_date = datetime.date.today() + relativedelta(months=months_until_graduation)
+
+# Display result
+st.write(f"Based on {CREDITS_PER_SEMESTER} credits/semester, you will likely graduate in **{estimated_graduation_date.strftime('%B %Y')}**.")
 
 # Defined method that creates the chart showing Completion status
 def PlotCreditsChart(df):
@@ -116,6 +135,34 @@ if st.session_state.selected_days:
 # Filters based on Time
 if st.session_state.selected_time:
     filtered_remaining_df = filtered_remaining_df[filtered_remaining_df["Time"].isin(selected_time)]
+
+if st.button("Recommend Courses"):
+    # Identify completed courses
+    completed_courses = df[df['Completed'].str.lower() == "completed units"]['Course Code'].str.strip().tolist()
+    
+    # Filter recommended and not already enrolled/planned/completed
+    eligible_df = df[
+        (df['Recommended'].str.strip().str.lower() == "yes")
+    ]
+
+    # Filter by prerequisite satisfaction
+    def prereq_met(row):
+        prereq = str(row['Pre-requisite']).strip()
+        return not prereq or prereq in completed_courses
+
+    eligible_df = eligible_df[eligible_df.apply(prereq_met, axis=1)]
+
+    # Pick up to 4 recommended courses
+    recommended_courses = eligible_df.sample(n=min(4, len(eligible_df)), random_state=42)
+
+    if recommended_courses.empty:
+        st.warning("No eligible recommended courses available at this time.")
+    else:
+        for idx in recommended_courses.index:
+            df.at[idx, 'Completed'] = 'In-progress'
+        df.to_csv(file_path, index=False)
+        st.success(f"Enrolled in {len(recommended_courses)} recommended courses.")
+        st.rerun()
 
 # List of classes to Enroll in/Plan for.
 for idx, row in filtered_remaining_df.iterrows():
