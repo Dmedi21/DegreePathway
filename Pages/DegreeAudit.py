@@ -9,6 +9,9 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(script_dir, "../ClassRequirements.csv")
 df = pd.read_csv(file_path)
 
+st.set_page_config(page_title="Degree Audit")
+
+
 # Normalize text
 df['Completed'] = df['Completed'].fillna('').str.strip().str.lower()
 df['Category'] = df['Category'].fillna('').str.strip()
