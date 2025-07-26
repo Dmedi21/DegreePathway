@@ -54,4 +54,4 @@ months_until_graduation = semesters_remaining * MONTHS_PER_SEMESTER
 estimated_graduation_date = datetime.date.today() + relativedelta(months=months_until_graduation)
 
 # Display result
-st.write(f"📅 Based on {CREDITS_PER_SEMESTER} credits/semester, you will likely graduate in **{estimated_graduation_date.strftime('%B %Y')}**.")
+st.write(f"Based on {CREDITS_PER_SEMESTER} credits/semester, you will likely graduate in **{estimated_graduation_date.strftime('%B %Y')}**.")
