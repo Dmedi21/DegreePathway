@@ -44,7 +44,7 @@ st.divider()
 
 # Button to open Degree Audit
 if st.button("Degree Audit"):
-    st.switch_page("pages/DegreeAudit")
+    st.switch_page("Degree Audit")
 
 # Estimate Graduation Date
 st.subheader("Estimated Graduation Date")
